@@ -43,30 +43,33 @@ public class Controller {
     @FXML
     private TextField processesCountTextField;
     @FXML
-    private void handleStart(){
-        refreshRate = Integer.parseInt(refreshRateTextField.getText());
-        if (taskManager == null || !taskManager.isRunning()) {
-            maxBatchSize = Integer.parseInt(maxBatchSizeTextField.getText());
-            taskManager = new TaskManager();
-            processesCount = Integer.parseInt(processesCountTextField.getText());
-            long pointsCount = Math.min(Integer.parseInt(numberOfPoints.getText()), Long.MAX_VALUE);
-            taskManager.init(pointsCount, canvas.getGraphicsContext2D(), min, max);
-            new Thread(taskManager).start();
-            progressBar.progressProperty().bind(taskManager.progressProperty());
+    private void handleStart() {
+        try {
+            if (taskManager == null || !taskManager.isRunning()) {
+                refreshRate = Integer.parseInt(refreshRateTextField.getText());
+                maxBatchSize = Integer.parseInt(maxBatchSizeTextField.getText());
+                taskManager = new TaskManager();
+                processesCount = Integer.parseInt(processesCountTextField.getText());
+                long pointsCount = Math.min(Integer.parseInt(numberOfPoints.getText()), Long.MAX_VALUE);
+                taskManager.init(pointsCount, canvas.getGraphicsContext2D(), min, max);
+                new Thread(taskManager).start();
+                progressBar.progressProperty().bind(taskManager.progressProperty());
 
-             if (updateProgressPeriodically == null){
-                 updateProgressPeriodically = new Timeline(new KeyFrame(Duration.seconds(1.0/getRefreshRate()), new EventHandler<ActionEvent>() {
+                if (updateProgressPeriodically == null) {
+                    updateProgressPeriodically = new Timeline(new KeyFrame(Duration.seconds(1.0 / getRefreshRate()), new EventHandler<ActionEvent>() {
 
-                     @Override
-                     public void handle(ActionEvent event) {
-                         updateOutput(taskManager.getMessage());
-                     }
-                 }));
-             }
-            updateProgressPeriodically.setCycleCount(Timeline.INDEFINITE);
-            updateProgressPeriodically.play();
-        }
+                        @Override
+                        public void handle(ActionEvent event) {
+                            updateOutput(taskManager.getMessage());
+                        }
+                    }));
+                }
+                updateProgressPeriodically.setCycleCount(Timeline.INDEFINITE);
+                updateProgressPeriodically.play();
+            }
 
+        }catch(java.lang.NullPointerException e){
+            e.printStackTrace();}
     }
     @FXML
     private void handleStop(){
@@ -87,6 +90,8 @@ public class Controller {
         stopButton.setTooltip(new Tooltip("Stops the calculation and throws away the result"));
         refreshRateTextField.setTooltip(new Tooltip("sets how many times per second you want to refresh"));
         processesCountTextField.setTooltip(new Tooltip("how many calculating processes are allowed"));
+        maxBatchSizeTextField.setTooltip(new Tooltip("set how many pixels will be rendered in one go. If you set it " +
+                "too low and total points too high you'll encounter problems"));
     }
     public static int getRefreshRate(){
         return refreshRate > 0 ? refreshRate : 1;
